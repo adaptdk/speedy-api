@@ -10,12 +10,15 @@ const express = require('express')
 const GitHub = require('./lib/GitHub')
 const Scheduler = require('./lib/Scheduler')
 const SpeedTracker = require('./lib/SpeedTracker')
+var bodyParser = require('body-parser')
 
 // ------------------------------------
 // Server
 // ------------------------------------
 
 const server = express()
+
+server.use(bodyParser.json())
 
 server.use(cors())
 
@@ -85,6 +88,52 @@ const testHandler = (req, res) => {
   })
 }
 
+
+// ------------------------------------
+// Endpoint: Create new profile
+// ------------------------------------
+// TEMPLATE
+// _default: false,
+// name: slug,
+// interval: 5,
+// parameters: {
+//   connectivity: "cable",
+//   location: "ec2-eu-west-3:Chrome",
+//   url: 'https://lol.com',
+//   runs: '2',
+//   video: true,
+// }
+
+const profileCreator = (res, req) => {
+  const { res: response } = res
+  const { req: request } = req
+  const { _default, ...settings } = request.body
+  const { user, repo, branch } = request.params
+
+  const profileSettings = {
+    ...settings,
+    default: _default
+  }
+
+  const speedtracker = new SpeedTracker({
+    db,
+    branch: branch,
+    // key: req.query.key,
+    remote: github,
+    repo: repo,
+    scheduler,
+    user: user
+  })  
+
+  speedtracker.createProfile(profileSettings).then(callback => {
+    response.send(JSON.stringify(callback))
+  }).catch(err => {
+    ErrorHandler.log(err)
+    response.status(500).send(JSON.stringify(err))
+  })
+}
+
+server.post('/create/:user/:repo/:branch', profileCreator)
 server.get('/v1/test/:user/:repo/:branch/:profile', testHandler)
 server.post('/v1/test/:user/:repo/:branch/:profile', testHandler)
 
@@ -110,7 +159,7 @@ server.get('/v1/connect/:user/:repo', (req, res) => {
     if (invitation) {
       return github.api.users.acceptRepoInvite({
         id: invitationId
-      })        
+      })
     } else {
       return Promise.reject()
     }
@@ -123,7 +172,7 @@ server.get('/v1/connect/:user/:repo', (req, res) => {
     ErrorHandler.log(err)
 
     res.status(500).send('Invitation not found.')
-  })  
+  })
 })
 
 // ------------------------------------
@@ -174,6 +223,6 @@ server.all('*', (req, res) => {
 
 process.on('unhandledRejection', (reason, promise) => {
   if (reason) {
-    ErrorHandler.log(reason)  
+    ErrorHandler.log(reason)
   }
 })
