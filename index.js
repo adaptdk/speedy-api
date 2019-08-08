@@ -80,7 +80,7 @@ const testHandler = (req, res) => {
   let profileName = req.params.profile
 
   speedtracker.runTest(profileName).then(response => {
-    res.status(200).send(JSON.stringify({success: false, response: response}))
+    res.send(JSON.stringify(response))
   }).catch(err => {
     ErrorHandler.log(err)
 
@@ -133,7 +133,8 @@ const profileCreator = (res, req) => {
   })  
 
   speedtracker.createProfile(profileSettings).then(callback => {
-    response.send(JSON.stringify(callback))
+    response.status(200).send(JSON.stringify({success: true, response: callback}))
+    // response.send(JSON.stringify(callback))
   }).catch(err => {
     ErrorHandler.log(err)
     response.status(500).send(JSON.stringify(err))
