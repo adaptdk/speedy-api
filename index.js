@@ -132,8 +132,10 @@ const profileCreator = (res, req) => {
     user: user
   })  
 
-  speedtracker.createProfile(profileSettings).then(callback => {
-    response.status(200).send(JSON.stringify({success: true, response: callback}))
+  speedtracker.createProfile(lol).then(callback => {
+    // response.status(200).send(JSON.stringify({success: true, response: callback}))
+    ErrorHandler.log(err)
+    response.status(500).send(JSON.stringify(err))
     // response.send(JSON.stringify(callback))
   }).catch(err => {
     ErrorHandler.log(err)
