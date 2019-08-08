@@ -107,12 +107,12 @@ const testHandler = (req, res) => {
 const profileCreator = (res, req) => {
   const { res: response } = res
   const { req: request } = req
-  const { _default, ...settings } = request.body
+  const { isfrontpage, ...settings } = request.body
   const { user, repo, branch } = request.params
 
   const profileSettings = {
     ...settings,
-    default: _default
+    default: isfrontpage
   }
 
   const speedtracker = new SpeedTracker({
