@@ -110,15 +110,22 @@ const profileCreator = (res, req) => {
   const { isfrontpage, ...settings } = request.body
   const { user, repo, branch } = request.params
 
+  console.log(request.body);
+  
+  
   const profileSettings = {
     ...settings,
     default: isfrontpage
   }
+  
+  
+  console.log('Profilesettings', profileSettings);
+  console.log(request.query.key);
 
   const speedtracker = new SpeedTracker({
     db,
     branch: branch,
-    // key: req.query.key,
+    key: request.query.key,
     remote: github,
     repo: repo,
     scheduler,
