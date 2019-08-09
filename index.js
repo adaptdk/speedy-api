@@ -109,18 +109,11 @@ const profileCreator = (res, req) => {
   const { req: request } = req
   const { isfrontpage, ...settings } = request.body
   const { user, repo, branch } = request.params
-
-  console.log(request.body);
-  
   
   const profileSettings = {
     ...settings,
     default: isfrontpage
   }
-  
-  
-  console.log('Profilesettings', profileSettings);
-  console.log(request.query.key);
 
   const speedtracker = new SpeedTracker({
     db,
@@ -133,7 +126,8 @@ const profileCreator = (res, req) => {
   })  
 
   speedtracker.createProfile(profileSettings).then(callback => {
-    response.status(200).send(JSON.stringify({success: true, response: callback}))
+    const status = callback.meta.status == '201 Created';
+    response.status(200).send(JSON.stringify({response: {success: status}}))
   }).catch(err => {
     ErrorHandler.log(err)
     response.status(500).send(JSON.stringify(err))
