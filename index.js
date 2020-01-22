@@ -4,6 +4,7 @@ import createCipher from 'crypto';
 import createDecipher from 'crypto';
 import Database from './lib/Database';
 import log from './lib/ErrorHandler';
+import ErrorHandler  from './lib/ErrorHandler';
 import express from 'express';
 import {GitHub, GITHUB_CONNECT } from './lib/GitHub';
 import Scheduler from './lib/Scheduler';
@@ -60,7 +61,7 @@ const testHandler = (req, res) => {
 
   // Abort if user is blocked
   if (blockList.indexOf(req.params.user) !== -1) {
-    log(`Request blocked for user ${req.params.user}`)
+    ErrorHandler.log(`Request blocked for user ${req.params.user}`)
 
     return res.status(429).send()
   }
@@ -82,7 +83,7 @@ const testHandler = (req, res) => {
   speedtracker.runTest(profileName).then(response => {
     res.send(JSON.stringify(response))
   }).catch(err => {
-    log(err)
+    ErrorHandler.log(err)
 
     res.status(500).send(JSON.stringify(err))
   })
@@ -130,7 +131,7 @@ const profileCreator = (res, req) => {
     const status = callback.meta.status == '201 Created';
     response.status(200).send(JSON.stringify({success: status, callback}))
   }).catch(err => {
-    log(err)
+    ErrorHandler.log(err)
     console.log(err)
     response.status(500).send(JSON.stringify(err))
   })
@@ -169,7 +170,7 @@ server.get('/v1/connect/:user/:repo', (req, res) => {
   }).then(response => {
     res.send('OK!')
   }).catch(err => {
-    log(err)
+    ErrorHandler.log(err)
 
     res.status(500).send('Invitation not found.')
   })
@@ -223,6 +224,6 @@ server.all('*', (req, res) => {
 
 process.on('unhandledRejection', (reason, promise) => {
   if (reason) {
-    log(reason)
+    ErrorHandler.log(reason)
   }
 })

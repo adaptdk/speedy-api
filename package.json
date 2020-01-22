@@ -28,5 +28,8 @@
     "webpagetest": "github:eduardoboucas/webpagetest-api",
     "yaml-front-matter": "^3.4.1"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "engines": {
+    "node": "13.x"
+  }
 }
