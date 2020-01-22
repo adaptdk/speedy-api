@@ -136,14 +136,14 @@ const profileCreator = (res, req) => {
 }
 
 server.post('/create/:user/:repo/:branch', profileCreator)
-server.conf.get('/v1/test/:user/:repo/:branch/:profile', testHandler)
+server.get('/v1/test/:user/:repo/:branch/:profile', testHandler)
 server.post('/v1/test/:user/:repo/:branch/:profile', testHandler)
 
 // ------------------------------------
 // Endpoint: Connect
 // ------------------------------------
 
-server.conf.get('/v1/connect/:user/:repo', (req, res) => {
+server.get('/v1/connect/:user/:repo', (req, res) => {
   const github = new GitHub(GITHUB_CONNECT)
 
   github.authenticate(conf.get('githubToken'))
@@ -178,7 +178,7 @@ server.conf.get('/v1/connect/:user/:repo', (req, res) => {
 // Endpoint: Encrypt
 // ------------------------------------
 
-server.conf.get('/encrypt/:key/:text?', (req, res) => {
+server.get('/encrypt/:key/:text?', (req, res) => {
   const key = req.params.key
   const text = req.params.text || req.params.key
 
@@ -194,7 +194,7 @@ server.conf.get('/encrypt/:key/:text?', (req, res) => {
 // Endpoint: Decrypt
 // ------------------------------------
 
-server.conf.get('/decrypt/:key/:text?', (req, res) => {
+server.get('/decrypt/:key/:text?', (req, res) => {
   const decipher = createDecipher('aes-256-ctr', req.params.key)
   let decrypted = decipher.update(req.params.text, 'hex', 'utf8')
 
