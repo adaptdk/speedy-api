@@ -4,7 +4,7 @@ const Analytics = require('./lib/Analytics')
 const config = require('./config')
 const cors = require('cors')
 const crypto = require('crypto')
-const Database = require('./lib/Database')
+const Database = require('./lib/Database').default
 const ErrorHandler = require('./lib/ErrorHandler')
 const express = require('express')
 const GitHub = require('./lib/GitHub')
@@ -59,6 +59,7 @@ let db = new Database(connection => {
 
 const testHandler = (req, res) => {
   const blockList = config.get('blockList').split(',')
+  console.log(req,res)
 
   // Abort if user is blocked
   if (blockList.indexOf(req.params.user) !== -1) {
