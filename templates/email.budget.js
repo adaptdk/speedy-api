@@ -1,6 +1,6 @@
-const constants = require(__dirname + '/../constants')
-const objectPath = require('object-path')
-const utils = require(__dirname + '/../lib/utils')
+import {metrics} from '../constants';
+import objectPath  from 'object-path'
+import {formatMetric } from "../lib/utils"
 
 const email = (infractors, data) => {
   const body = `
@@ -11,9 +11,9 @@ const email = (infractors, data) => {
     <ul>
     ${infractors.map(infractor => {
       const comparisonSign = infractor.value > infractor.limit ? '>' : '<'
-      const metric = objectPath.get(constants.metrics, infractor.metric)
+      const metric = objectPath.get(metrics, infractor.metric)
       
-      return `<li><strong>${metric.name}</strong>: ${utils.formatMetric(infractor.metric, infractor.value)} (${comparisonSign} ${utils.formatMetric(infractor.metric, infractor.limit)})</strong>`
+      return `<li><strong>${metric.name}</strong>: ${formatMetric(infractor.metric, infractor.value)} (${comparisonSign} ${formatMetric(infractor.metric, infractor.limit)})</strong>`
     }).join('')}
     </ul>
     <br>

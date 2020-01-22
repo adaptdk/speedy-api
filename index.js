@@ -1,16 +1,14 @@
-'use strict'
-
-const Analytics = require('./lib/Analytics')
-const config = require('./config')
-const cors = require('cors')
-const crypto = require('crypto')
-const Database = require('./lib/Database').default
-const ErrorHandler = require('./lib/ErrorHandler')
-const express = require('express')
-const GitHub = require('./lib/GitHub')
-const Scheduler = require('./lib/Scheduler')
-const SpeedTracker = require('./lib/SpeedTracker')
-var bodyParser = require('body-parser')
+import cors from 'cors';
+import conf from './config';
+import createCipher from 'crypto';
+import createDecipher from 'crypto';
+import Database from './lib/Database';
+import log from './lib/ErrorHandler';
+import express from 'express';
+import {GitHub, GITHUB_CONNECT } from './lib/GitHub';
+import Scheduler from './lib/Scheduler';
+import SpeedTracker from './lib/SpeedTracker';
+import json from 'body-parser';
 
 // ------------------------------------
 // Server
@@ -18,7 +16,7 @@ var bodyParser = require('body-parser')
 
 const server = express()
 
-server.use(bodyParser.json())
+server.use(json())
 
 server.use(cors())
 
@@ -34,7 +32,7 @@ let scheduler
 
 const github = new GitHub()
 
-github.authenticate(config.get('githubToken'))
+github.authenticate(conf.get('githubToken'))
 
 // ------------------------------------
 // DB connection
@@ -43,8 +41,8 @@ github.authenticate(config.get('githubToken'))
 let db = new Database(connection => {
   console.log('(*) Established database connection')
 
-  server.listen(config.get('port'), () => {
-    console.log(`(*) Server listening on port ${config.get('port')}`)
+  server.listen(conf.get('port'), () => {
+    console.log(`(*) Server listening on port ${conf.get('port')}`)
   })
 
   scheduler = new Scheduler({
@@ -58,12 +56,12 @@ let db = new Database(connection => {
 // ------------------------------------
 
 const testHandler = (req, res) => {
-  const blockList = config.get('blockList').split(',')
+  const blockList = conf.get('blockList').split(',')
   console.log(req,res)
 
   // Abort if user is blocked
   if (blockList.indexOf(req.params.user) !== -1) {
-    ErrorHandler.log(`Request blocked for user ${req.params.user}`)
+    log(`Request blocked for user ${req.params.user}`)
 
     return res.status(429).send()
   }
@@ -83,7 +81,7 @@ const testHandler = (req, res) => {
   speedtracker.runTest(profileName).then(response => {
     res.send(JSON.stringify(response))
   }).catch(err => {
-    ErrorHandler.log(err)
+    log(err)
 
     res.status(500).send(JSON.stringify(err))
   })
@@ -131,24 +129,24 @@ const profileCreator = (res, req) => {
     const status = callback.meta.status == '201 Created';
     response.status(200).send(JSON.stringify({success: status, callback}))
   }).catch(err => {
-    ErrorHandler.log(err)
+    log(err)
     console.log(err)
     response.status(500).send(JSON.stringify(err))
   })
 }
 
 server.post('/create/:user/:repo/:branch', profileCreator)
-server.get('/v1/test/:user/:repo/:branch/:profile', testHandler)
+server.conf.get('/v1/test/:user/:repo/:branch/:profile', testHandler)
 server.post('/v1/test/:user/:repo/:branch/:profile', testHandler)
 
 // ------------------------------------
 // Endpoint: Connect
 // ------------------------------------
 
-server.get('/v1/connect/:user/:repo', (req, res) => {
-  const github = new GitHub(GitHub.GITHUB_CONNECT)
+server.conf.get('/v1/connect/:user/:repo', (req, res) => {
+  const github = new GitHub(GITHUB_CONNECT)
 
-  github.authenticate(config.get('githubToken'))
+  github.authenticate(conf.get('githubToken'))
 
   github.api.users.getRepoInvites({}).then(response => {
     let invitationId
@@ -168,12 +166,9 @@ server.get('/v1/connect/:user/:repo', (req, res) => {
       return Promise.reject()
     }
   }).then(response => {
-    // Track event
-    new Analytics().track(Analytics.Events.CONNECT)
-
     res.send('OK!')
   }).catch(err => {
-    ErrorHandler.log(err)
+    log(err)
 
     res.status(500).send('Invitation not found.')
   })
@@ -183,11 +178,11 @@ server.get('/v1/connect/:user/:repo', (req, res) => {
 // Endpoint: Encrypt
 // ------------------------------------
 
-server.get('/encrypt/:key/:text?', (req, res) => {
+server.conf.get('/encrypt/:key/:text?', (req, res) => {
   const key = req.params.key
   const text = req.params.text || req.params.key
 
-  const cipher = crypto.createCipher('aes-256-ctr', key)
+  const cipher = createCipher('aes-256-ctr', key)
   let encrypted = cipher.update(decodeURIComponent(text), 'utf8', 'hex')
 
   encrypted += cipher.final('hex')
@@ -199,8 +194,8 @@ server.get('/encrypt/:key/:text?', (req, res) => {
 // Endpoint: Decrypt
 // ------------------------------------
 
-server.get('/decrypt/:key/:text?', (req, res) => {
-  const decipher = crypto.createDecipher('aes-256-ctr', req.params.key)
+server.conf.get('/decrypt/:key/:text?', (req, res) => {
+  const decipher = createDecipher('aes-256-ctr', req.params.key)
   let decrypted = decipher.update(req.params.text, 'hex', 'utf8')
 
   decrypted += decipher.final('utf8')
@@ -227,6 +222,6 @@ server.all('*', (req, res) => {
 
 process.on('unhandledRejection', (reason, promise) => {
   if (reason) {
-    ErrorHandler.log(reason)
+    log(reason)
   }
 })

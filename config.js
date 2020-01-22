@@ -1,4 +1,4 @@
-var convict = require('convict')
+import convict from 'convict';
 
 var conf = convict({
   env: {
@@ -114,4 +114,4 @@ try {
   
 }
 
-module.exports = conf
+export default conf
