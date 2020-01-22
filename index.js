@@ -57,7 +57,6 @@ let db = new Database(connection => {
 
 const testHandler = (req, res) => {
   const blockList = conf.get('blockList').split(',')
-  console.log(req,res)
 
   // Abort if user is blocked
   if (blockList.indexOf(req.params.user) !== -1) {
@@ -77,6 +76,8 @@ const testHandler = (req, res) => {
   })
 
   let profileName = req.params.profile
+
+  console.log('🍌🍌🍌🍌🍌🍌',speedtracker);
 
   speedtracker.runTest(profileName).then(response => {
     res.send(JSON.stringify(response))
