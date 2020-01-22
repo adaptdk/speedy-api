@@ -53,7 +53,13 @@ var conf = convict({
       format: String,
       default: 'st_repos',
       env: 'COLLECTION_REPOS'
-    }
+    },
+    name: { 
+      doc: 'Name of the database',
+      format: String,
+      default: 'mydb',
+      env: 'MONGODB_NAME',
+    },
   },
   scheduling: {
     checkInterval: {
